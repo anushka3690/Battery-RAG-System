@@ -7,6 +7,7 @@ A sophisticated Retrieval-Augmented Generation (RAG) system for battery engineer
 - **📊 Data Processing**: Loads and processes battery specifications from CSV files
 - **🧠 Vector Embeddings**: Uses SentenceTransformers for semantic search
 - **💾 Vector Database**: ChromaDB for efficient similarity search
+- **🤖 Google Gemini API**: Powered by Google's Gemini-1.5-flash model for intelligent responses
 - **🗣️ Conversation Memory**: Maintains context across multiple interactions
 - **⚡ Real-time Calculations**: Performs battery pack calculations (series/parallel configurations)
 - **🔍 Smart Retrieval**: Finds relevant battery data based on query semantics
@@ -16,29 +17,39 @@ A sophisticated Retrieval-Augmented Generation (RAG) system for battery engineer
 
 ### Prerequisites
 ```bash
-pip install pandas sentence-transformers chromadb langchain langchain-community
+pip install pandas sentence-transformers chromadb langchain langchain-google-genai python-dotenv
+```
+
+### API Setup
+1. Get your Google AI Studio API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Create a `.env` file in the project root:
+```bash
+GOOGLE_API_KEY=your_actual_api_key_here
 ```
 
 ### Basic Usage
-1. Open `rag_system.ipynb` in Jupyter
-2. Run all 16 small cells in sequence to initialize the system
-3. Use `rag_chain.invoke("your query")` or `battery_chat()` for interaction
+1. Set up your Google AI Studio API key in `.env` file
+2. Open `rag_system.ipynb` in Jupyter
+3. Run all cells in sequence to initialize the system
+4. Use the direct query cell or `battery_chat()` for interaction
 
 ## 📁 Project Structure
 
 ```
 battery_rag_system/
-├── rag_system.ipynb           # Streamlined RAG with LangChain (16 small cells)
+├── rag_system.ipynb           # Complete RAG system with Google Gemini API
 ├── battery_data_10000_rows.csv # Battery specifications dataset (10K records)
+├── .env                       # Google API key configuration
 └── README.md                  # Complete documentation
 ```
 
 ## 🔧 System Architecture
 
-### 1. Modular Cell Structure (16 Small Cells)
+### 1. Modular Cell Structure
 - Separate imports, data loading, embeddings, vector store setup
-- Individual functions for retrieval, parsing, calculations
-- LangChain components and chain construction
+- Google Gemini API integration with fallback handling
+- Individual functions for retrieval, processing, and calculations
+- Clean, step-by-step implementation for easy understanding
 
 ### 2. Data Ingestion & Processing
 - Loads battery specifications from CSV
@@ -50,74 +61,72 @@ battery_rag_system/
 - Stores in ChromaDB with batch processing (handles 10K+ records)
 - Optimizes for fast similarity search
 
-### 4. LangChain RAG Pipeline
-- **RunnableParallel**: Combines context retrieval and query processing
-- **RunnableLambda**: Custom response generation logic
-- **PromptTemplate**: Structured battery engineering prompts
-- **Memory Integration**: Conversation tracking with LangChain memory
+### 4. Google Gemini RAG Pipeline
+- **Semantic Search**: ChromaDB similarity search for relevant documents
+- **Context Formatting**: Structures retrieved data for optimal prompting
+- **Prompt Template**: Battery engineering-specific prompt design
+- **Gemini Integration**: Uses Google's Gemini-1.5-flash for intelligent responses
+- **Error Handling**: Automatic fallback between Gemini models
 
-### 5. Memory System
-- **Conversation Buffer**: Maintains chat history using LangChain memory
-- **Query History**: Tracks all user interactions with timestamps
-- **Context Integration**: Uses previous conversations to enhance responses
-
-### 6. Retrieval & Generation
+### 5. Query Processing
 - Embeds user queries for semantic matching
-- Retrieves top-k most relevant battery records
-- Generates contextual responses with calculation capabilities
+- Retrieves top-k most relevant battery records  
+- Generates contextual responses with Google Gemini
+- Provides step-by-step calculations and technical analysis
 
-## 🔗 LangChain Integration
+## 🤖 Google Gemini Integration
 
-### Chain Structure
+### API Configuration
 ```python
-rag_chain = (
-    RunnableParallel({
-        "context": lambda x: memory.get_context(),
-        "query": RunnablePassthrough(),
-        "battery_data": lambda x: format_docs(retrieve_documents(x))
-    })
-    | RunnableLambda(lambda x: generate_response(x["query"], retrieve_documents(x["query"])))
+# Environment setup
+GOOGLE_API_KEY=your_actual_api_key_here
+
+# Model initialization
+llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    google_api_key=google_api_key
 )
 ```
 
 ### Usage Examples
 ```python
-# Direct chain usage
-result = rag_chain.invoke("Calculate 2S3P configuration")
+# Direct RAG query
+result = rag_query("Calculate 2S3P configuration")
 
 # Interactive chat
 battery_chat()  # Starts interactive session
+
+# Custom query
+my_query = "which battery has the lowest cost per kwh"
+result = rag_query(my_query)
 ```
 
 ## 💬 Prompt Engineering
 
 ### Main Prompt Template
 ```
-You are a battery engineering expert assistant with access to a comprehensive battery database.
+You are a battery engineering expert. Use the provided context to answer the user's question.
 
-{conversation_context}
+Context (Retrieved Battery Data):
+{context}
 
-Current Query: {query}
-
-Relevant Battery Data:
-{retrieved_battery_data}
+User Question: {query}
 
 Instructions:
-- Answer based on the provided battery data and previous conversation context
-- For calculations, show step-by-step work
-- If data is insufficient, clearly state limitations
-- Consider previous interactions to provide contextual responses
-- For configurations like 2S3P: 2S = 2 cells in series, 3P = 3 cells in parallel
+- Answer based only on the provided context
+- Be technical and precise
+- If calculating configurations, show step-by-step work
+- For 2S3P: 2 in series (voltage adds), 3 in parallel (capacity adds)
 
-Response:
+Answer:
 ```
 
 ### Key Prompt Features
-- **Context Awareness**: Includes previous conversation history
 - **Domain Expertise**: Assumes battery engineering knowledge
+- **Data Grounding**: Requires responses based on retrieved data
 - **Calculation Focus**: Emphasizes step-by-step mathematical work
 - **Configuration Understanding**: Handles series/parallel notation (2S3P format)
-- **Data Grounding**: Requires responses based on retrieved data
+- **Technical Precision**: Ensures accurate engineering calculations
 
 ## 🧮 Calculation Capabilities
 
@@ -147,12 +156,7 @@ Response:
 ```
 "Compare the top 3 batteries by energy density"
 "Which battery type is better for electric vehicles - NMC or LiFePO4?"
-```
-
-### Memory-Based Queries
-```
-"What was the voltage of the battery we discussed earlier?"
-"Based on our previous conversation, which configuration do you recommend?"
+"Find batteries with highest capacity in the database"
 ```
 
 ## 🧠 Memory System Details
@@ -189,35 +193,42 @@ Energy Density: 250 Wh/kg
 
 ### Custom Query Function
 ```python
-result = battery_rag_query("Your query here", top_k=5)
+result = rag_query("Your query here")
 print(result['response'])
 print(f"Retrieved {len(result['retrieved_docs'])} documents")
 ```
 
 ### Interactive Chat
 ```python
-chat_with_battery_expert()  # Starts interactive session
+battery_chat()  # Starts interactive session with Google Gemini
 ```
 
-### Memory Inspection
+### API Key Management
 ```python
-print(f"Total interactions: {len(memory.query_history)}")
-print(memory.get_context())  # Shows recent conversation context
+# Check API key status
+print("Google Gemini (flash) LLM initialized successfully!")
+print("LLM ready for RAG pipeline")
 ```
 
-## 🔄 Comparison with YouTube Chatbot
+## 🔄 Key Technical Features
 
-### Similarities
-- **Memory Integration**: Both use LangChain memory components
-- **RAG Architecture**: Similar retrieval-augmentation pattern
-- **Interactive Chat**: Both support conversational interfaces
-- **Document Processing**: Handle unstructured data conversion
+### Google Gemini Integration
+- **Model**: Uses Google's Gemini-1.5-flash for fast, intelligent responses
+- **Fallback**: Automatic fallback between Gemini models for reliability
+- **API Management**: Secure API key handling through environment variables
+- **Error Handling**: Comprehensive error handling for API limitations
 
-### Key Differences
-- **Domain Specific**: Battery engineering vs. video content
-- **Calculation Focus**: Mathematical computations vs. content summarization
-- **Structured Data**: CSV processing vs. transcript parsing
-- **Technical Precision**: Engineering calculations vs. general Q&A
+### RAG Architecture
+- **Semantic Search**: Advanced document retrieval using vector embeddings
+- **Context Formation**: Intelligent context building from retrieved documents
+- **Prompt Engineering**: Domain-specific prompts for battery engineering
+- **Response Generation**: Technical analysis with step-by-step calculations
+
+### Data Processing
+- **CSV Integration**: Processes large battery datasets (10K+ records)
+- **Document Chunking**: Converts structured data to searchable documents
+- **Vector Storage**: Efficient similarity search with ChromaDB
+- **Batch Processing**: Optimized for large-scale data handling
 
 ## 🛠️ Configuration Options
 
@@ -229,21 +240,24 @@ print(memory.get_context())  # Shows recent conversation context
 - ChromaDB with in-memory storage
 - Batch size: 1000 documents (adjustable)
 
-### Memory Settings
-- Buffer size: Last 3 interactions
-- History: All interactions with timestamps
+### Google Gemini API
+- Model: gemini-1.5-flash (primary)
+- Fallback: gemini-1.5-pro (if available)
+- Rate limiting: Automatic handling and retries
 
 ## 🆘 Troubleshooting
 
 ### Common Issues
-1. **ChromaDB Batch Size Error**: Reduce batch_size in the code
-2. **Memory Overflow**: Clear memory with `memory.query_history.clear()`
-3. **Embedding Errors**: Ensure sentence-transformers is properly installed
+1. **API Key Errors**: Ensure your Google AI Studio API key is valid and properly set in `.env`
+2. **ChromaDB Batch Size Error**: Reduce batch_size in the code
+3. **Gemini Rate Limits**: System automatically falls back to gemini-1.5-flash model
+4. **Embedding Errors**: Ensure sentence-transformers is properly installed
 
 ### Performance Tips
 - Use smaller embedding models for faster processing
 - Adjust top_k parameter based on your needs
-- Clear memory periodically for long sessions
+- Monitor Google AI Studio usage quotas
+- Check API key validity if getting authentication errors
 
 ## 📞 Support
 
