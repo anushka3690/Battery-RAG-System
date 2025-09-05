@@ -233,18 +233,6 @@ print(memory.get_context())  # Shows recent conversation context
 - Buffer size: Last 3 interactions
 - History: All interactions with timestamps
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## 🆘 Troubleshooting
 
 ### Common Issues
