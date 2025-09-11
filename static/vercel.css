@@ -1,0 +1,35 @@
+/* Vercel deployment notification styles */
+.vercel-notice {
+    background-color: #ffeeee;
+    border-left: 4px solid #ff4040;
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: 4px;
+}
+
+.vercel-notice h3 {
+    margin-top: 0;
+    color: #d32f2f;
+}
+
+.vercel-notice p {
+    margin-bottom: 8px;
+}
+
+.deployment-options {
+    background-color: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-top: 15px;
+}
+
+.deployment-options h4 {
+    margin-top: 0;
+    color: #2e7d32;
+}
+
+.deployment-options ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
