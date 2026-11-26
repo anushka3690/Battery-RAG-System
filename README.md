@@ -2,6 +2,12 @@
 
 A sophisticated Retrieval-Augmented Generation (RAG) system for battery engineering calculations and analysis, featuring conversation memory and semantic search capabilities.
 
+## Portfolio summary
+
+This project turns structured battery-cell data into a conversational, domain-focused assistant. It demonstrates offline data preparation, SentenceTransformers embeddings, ChromaDB retrieval, LangChain prompt orchestration, context-aware responses, and a Flask interface; generated battery-pack calculations are presented step by step.
+
+The repository includes a synthetic-data generator for 10,000 rows and preprocessed artifacts. Generated example data should not be mistaken for validated engineering measurements, and no production accuracy or business-impact claim is made here.
+
 ## 🌟 Features
 
 - **📊 Data Processing**: Loads and processes battery specifications from CSV files
